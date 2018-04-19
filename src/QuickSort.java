@@ -12,6 +12,9 @@
  * @author Yan Vinokur
  */
 public class QuickSort {
+    private int exchangeCounter;
+    private int comparisonCounter;
+
     /**
      * Partition array such that all items less than or equal to 'pivot' are
      * to the left of pivot and the rest are to the right. Pivot is selected
@@ -23,12 +26,8 @@ public class QuickSort {
      * @return location of last item in low partition.
      */
     private int partition(int numbers [], int i, int k, String type) {
-        int l;
-        int j;
+        int l = i - 1;
         int pivotIndex = k;
-        int pivot = numbers[pivotIndex];
-        int temp;
-        boolean done = false;
 
         if (type.equals("median-of-3")) {
             int midpoint = (i + k) / 2;
@@ -41,28 +40,32 @@ public class QuickSort {
                 pivotIndex = i;
             }
                 else if (medianOf3[1] == numbers[k]) {
-                    pivotIndex = k;
-                }
+                pivotIndex = k;
+            }
                     else {
-                        pivotIndex = midpoint;
-                    }
-            pivot = numbers[pivotIndex];
+                pivotIndex = midpoint;
+            }
         }
 
-        l = i - 1;
-//        j = i;
-        System.out.println("Pivot Index: " + pivotIndex);
-        System.out.println("Pivot: " + pivot);
+        int pivot = numbers[pivotIndex];
+
+//        System.out.println("Pivot Index: " + pivotIndex);
+//        System.out.println("Pivot: " + pivot);
         exchange(numbers, k, pivotIndex);
-        for (j = i; j < k; j++) {
+        exchangeCounter++;
+
+        for (int j = i; j < k; j++) {
             if (numbers[j] <= pivot) {
                 ++l;
                 exchange(numbers, l, j);
+                exchangeCounter++;
             }
+            comparisonCounter++;
         }
         exchange(numbers, l + 1, k);
-        QuickSortApp.printArray(numbers);
-        System.out.println("l: " + l);
+        exchangeCounter++;
+//        QuickSortApp.printArray(numbers);
+//        System.out.println("Returned partition index: " + (l + 1));
         return l + 1;
     }
 
@@ -136,4 +139,15 @@ public class QuickSort {
             rQuickSort(numbers, q + 1, k, type);
         }
     }
+
+    public int getExchangeCounter() {
+        return exchangeCounter;
+    }
+
+    public int getComparisonCounter() {
+        return comparisonCounter;
+    }
+
+
+
 }
