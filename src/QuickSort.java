@@ -1,72 +1,97 @@
+import java.util.Stack;
+
 /**
- * Class containing 4 QuickSort methods:
- *  1. Select the first item of the partition as the pivot.
- *     Treat partitions of size one and two as stopping cases.
- *  2. Select the first item of the partition as the pivot.
- *     Treat a partition of size 100 as a stopping case. Use an insertion sort to finish.
- *  3. Select the first item of the partition as the pivot.
- *     Treat a partition of size 50 as a stopping case. Use an insertion sort to finish.
- *  4. Select the median-of-three as the pivot.
- *     Treat partitions of size one and two as stopping cases.
+ * Class containing QuickSort related methods.
  *
  * @author Yan Vinokur
  */
 public class QuickSort {
-    private int exchangeCounter;
     private int comparisonCounter;
 
     /**
-     * Partition array such that all items less than or equal to 'pivot' are
-     * to the left of pivot and the rest are to the right. Pivot is selected
-     * based on type parameter.
+     * Iterative QuickSort.
+     * @param numbers array of integers to be sorted
+     * @param i start index
+     * @param k end index
+     * @param type Can be "normal" or "median-of-3".
+     */
+    public void quickSort(int numbers[], int i, int k, String type) {
+        int q;
+        Stack stack = new Stack();
+        stack.push(i);
+        stack.push(k);
+
+        while (!stack.isEmpty()) {
+            int end = (int) stack.pop();
+            int start = (int) stack.pop();
+
+            if (end - start < 2) {
+                continue;
+            }
+
+            q = partition(numbers, start, end, type);
+
+            stack.push(q + 1);
+            stack.push(end);
+            stack.push(start);
+            stack.push(q - 1);
+        }
+    }
+
+    /**
+     * Partition array such that all items less than or equal to 'pivot' are to the left of pivot
+     * and the rest are to the right. Pivot is selected based on type parameter.
      * @param numbers Array of numbers to partition
      * @param i Start index (anything below is ignored)
      * @param k End index (anything above is ignored)
-     * @param type Specifies how pivot is selected see class description.
-     * @return location of last item in low partition.
+     * @param type Can be "normal" or "median-of-3".
+     * @return location of first item in high partition.
      */
     private int partition(int numbers [], int i, int k, String type) {
         int l = i - 1;
         int pivotIndex = k;
+        int pivot;
 
-        if (type.equals("median-of-3")) {
-            int midpoint = (i + k) / 2;
-            int[] medianOf3 = new int[3];
-            medianOf3[0] = numbers[i];
-            medianOf3[1] = numbers[midpoint];
-            medianOf3[2] = numbers[k];
-            InsertionSort.insertionSort(medianOf3, 3);
-            if (medianOf3[1] == numbers[i]) {
-                pivotIndex = i;
-            }
-                else if (medianOf3[1] == numbers[k]) {
-                pivotIndex = k;
-            }
-                    else {
-                pivotIndex = midpoint;
-            }
-        }
+        if (type.equals("median-of-3")) pivotIndex = findMedian(numbers, i, k);
 
-        int pivot = numbers[pivotIndex];
+        pivot = numbers[pivotIndex];
 
-//        System.out.println("Pivot Index: " + pivotIndex);
-//        System.out.println("Pivot: " + pivot);
-        exchange(numbers, k, pivotIndex);
-        exchangeCounter++;
-
-        for (int j = i; j < k; j++) {
+        for (int j = i; j <= k; j++) {
+            if (j == pivotIndex) continue;
             if (numbers[j] <= pivot) {
                 ++l;
+                if (l == pivotIndex) pivotIndex = j;
                 exchange(numbers, l, j);
-                exchangeCounter++;
             }
             comparisonCounter++;
         }
-        exchange(numbers, l + 1, k);
-        exchangeCounter++;
-//        QuickSortApp.printArray(numbers);
-//        System.out.println("Returned partition index: " + (l + 1));
+        exchange(numbers, l + 1, pivotIndex);
         return l + 1;
+    }
+
+    /**
+     * Utility that finds the index of the median of first, last, and midpoint elements in an integer array.
+     * @param numbers Array of integers
+     * @param i the index of the first element of the sub-array of interest
+     * @param k the index of the last element of the sub-array of interest
+     * @return the index of the median-of-three
+     */
+    private int findMedian(int[] numbers, int i, int k) {
+        int midpoint = (i + k) / 2;
+        int[] medianOf3 = new int[3];
+        medianOf3[0] = numbers[i];
+        medianOf3[1] = numbers[midpoint];
+        medianOf3[2] = numbers[k];
+        InsertionSort.insertionSort(medianOf3, 3);
+        if (medianOf3[1] == numbers[i]) {
+            return i;
+        }
+        else if (medianOf3[1] == numbers[k]) {
+            return k;
+        }
+        else {
+            return midpoint;
+        }
     }
 
     private void exchange(int[] numbers, int i, int j) {
@@ -75,79 +100,22 @@ public class QuickSort {
         numbers[j] = temp;
     }
 
-//    /**
-//     * Iterative implementation of QuickSort sorting algorithm.
-//     * @param numbers Array of numbers to be sorted.
-//     * @param type type of QuickSort variation.
-//     *             Accepted values are: "First", "Stop50", "Stop100", "MedianOf3".
-//     */
-//    public void quickSort(int[] numbers, String type) {
-//        int j = 0;
-//        Stack stack = new Stack();
-//        stack.push(0);
-//        stack.push(numbers.length - 1);
-//
-//        while (!stack.isEmpty()) {
-//            int end = stack.pop();
-//            int start = stack.pop();
-//
-//            if (end - start < 2) {
-//                continue;
-//            }
-//
-//            switch (type) {
-//                case "Stop100": {
-//                    if (end - start <= 100) {
-//                        InsertionSort.insertionSort(numbers, end - start + 1);
-//                        continue;
-//                    }
-//                    break;
-//                }
-//                case "Stop50": {
-//                    if (end - start <= 50) {
-//                        InsertionSort.insertionSort(numbers, end - start + 1);
-//                        continue;
-//                    }
-//                    break;
-//                }
-//            }
-//
-//            /* Partition the data within the array. Value j returned
-//               from partitioning is location of last item in low partition. */
-//            j = partition(numbers, start, end, type);
-//
-//            stack.push(j + 1);
-//            stack.push(end);
-//
-//            stack.push(start);
-//            stack.push(j);
-//        }
-//    }
-
-    /**
-     * Recursive QuickSort method.
-     * @param numbers array of integers to be sorted
-     * @param i start index
-     * @param k end index
-     * @param type type of QuickSort variation.
-     *             Accepted values are: "normal" and "median-of-3".
-     */
-    public void rQuickSort(int numbers[], int i, int k, String type) {
-        if (i < k) {
-            int q = partition(numbers, i, k, type);
-            rQuickSort(numbers, i, q - 1, type);
-            rQuickSort(numbers, q + 1, k, type);
-        }
-    }
-
-    public int getExchangeCounter() {
-        return exchangeCounter;
-    }
-
     public int getComparisonCounter() {
         return comparisonCounter;
     }
 
-
-
+    /**
+     * Recursive QuickSort method. May cause StackOverflow in worst-case scenarios.
+     * @param numbers array of integers to be sorted
+     * @param i start index
+     * @param k end index
+     * @param type Can be "normal" or "median-of-3".
+     */
+    public void recursiveQuickSort(int numbers[], int i, int k, String type) {
+        if (i < k) {
+            int q = partition(numbers, i, k, type);
+            recursiveQuickSort(numbers, i, q - 1, type);
+            recursiveQuickSort(numbers, q + 1, k, type);
+        }
+    }
 }
